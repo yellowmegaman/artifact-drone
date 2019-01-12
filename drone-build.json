@@ -1,0 +1,40 @@
+{
+  "variables": {
+    "source": "golang:1.10.5",
+    "tag": "master"
+  },
+  "builders":[
+    {
+      "type": "docker",
+      "commit": true,
+      "image": "{{user `source`}}"
+    }
+  ],
+  "provisioners": [
+    {
+        "type": "shell",
+        "inline": [
+          "go get -u github.com/drone/drone-ui/dist",
+          "go get -u golang.org/x/net/context",
+	  "go get -u golang.org/x/net/context/ctxhttp",
+	  "go get -u github.com/golang/protobuf/proto",
+	  "go get -u github.com/golang/protobuf/protoc-gen-go",
+          "git clone -b {{user `tag`}} https://github.com/drone/drone.git $GOPATH/src/github.com/drone/drone",
+	  "go install github.com/drone/drone/cmd/drone-agent",
+          "go install github.com/drone/drone/cmd/drone-server"
+      ]
+    },
+    {
+        "type": "file",
+	"direction": "download",
+        "source": "/go/bin/drone-server",
+        "destination": "./drone-server.{{user `tag`}}"
+    },
+    {
+        "type": "file",
+        "direction": "download",
+        "source": "/go/bin/drone-agent",
+        "destination": "./drone-agent.{{user `tag`}}"
+    }
+  ]
+}

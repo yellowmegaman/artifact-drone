@@ -1,0 +1,31 @@
+{
+  "variables": {
+    "source": "golang:1.10.5",
+    "tag": "master"
+  },
+  "builders":[
+    {
+      "type": "docker",
+      "commit": true,
+      "image": "{{user `source`}}"
+    }
+  ],
+  "provisioners": [
+    {
+        "type": "shell",
+        "inline": [
+	  "git clone -b {{user `tag`}} https://github.com/drone/autoscaler.git $GOPATH/src/github.com/drone/autoscaler",
+	  "go get -u github.com/golang/dep/cmd/dep",
+	  "cd src/github.com/drone/autoscaler",
+	  "dep ensure",
+	  "go install github.com/drone/autoscaler/cmd/drone-autoscaler"
+      ]
+    },
+    {
+        "type": "file",
+	"direction": "download",
+        "source": "/go/bin/drone-autoscaler",
+        "destination": "./drone-autoscaler.{{user `tag`}}"
+    }
+  ]
+}

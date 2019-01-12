@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "app": "drone-autoscaler",
+    "source": "debian:stretch-slim",
+    "tag":  "master"
+  },
+  "builders":[
+    {
+      "type": "docker",
+      "commit": true,
+      "image": "{{user `source`}}",
+      "changes": [
+        "ENTRYPOINT [\"/bin/{{user `app`}}\"]"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+        "type": "file",
+        "source": "./drone-autoscaler.{{user `tag`}}",
+        "destination": "/bin/{{user `app`}}"
+    },
+    {
+        "type": "shell",
+        "inline": [
+          "chmod 0755 /bin/{{user `app`}}"
+      ]
+    }
+  ],
+  "post-processors": [
+    [
+      {
+        "type": "docker-tag",
+        "repository": "{{user `app`}}",
+        "tag": "{{user `tag`}}"
+      }
+    ]
+  ]
+}
